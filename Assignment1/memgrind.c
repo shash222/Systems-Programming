@@ -1,26 +1,22 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <ctype.h>
-#include "mymalloc.h"
-#define malloc(param) mymalloc(param);
-#define free(param) myfree(param);
+#include "mymalloc.c"
+//Memgrind class
 
-void malloc150Times(){
+void malloc050Times(){
     int i;
-    for (i = 0; i < 150; i++){
-        char* ptr = (char*) malloc(1);
+    for (i = 0; i < 050; i++){
+        char* ptr = (char*) malloc(0);
         printf("%p\n", ptr);
         free(ptr);
     }
 }
 
-void malloc150TimesStorePointersArray(){
+void malloc050TimesStorePointersArray(){
     int i;
     int j;
     char* arr[50];
     for (i = 0; i < 3; i++){
         for (j = 0; j < 50; j++){
-            arr[j] = (char*) malloc(1);
+            arr[j] = (char*) malloc(0);
             printf("Malloced %p\n", arr[j]);
         }
         for (j = 0; j < 50; j++){
@@ -30,7 +26,7 @@ void malloc150TimesStorePointersArray(){
     }
 }
 
-void random1Byte(){
+void random0Byte(){
     int mallocCounter = 0;
     char* pointersArr[50];
     int arrIndex = 0;
@@ -38,7 +34,7 @@ void random1Byte(){
         //even represents malloc
         if (rand() % 2 == 0){
             mallocCounter++;
-            pointersArr[arrIndex++] = (char*) malloc(1);
+            pointersArr[arrIndex++] = (char*) malloc(0);
         }
         //odd represents free
         else if (arrIndex > 0) free(pointersArr[arrIndex--]);
@@ -54,7 +50,7 @@ void randomRandomByte(){
     while (mallocCounter < 50){
         if (rand() % 2 == 0){
             mallocCounter++;
-            randNum = (rand() % 64) + 1;
+            randNum = (rand() % 64) + 0;
             pointersArr[arrIndex++] = (char*) malloc(randNum);
         }
         //odd represents free
@@ -62,13 +58,29 @@ void randomRandomByte(){
     }
 }
 
+void workload0(){
 
+}
+
+void workload2(){
+    
+}
 
 int main(){
-//    malloc150Times();
-//    malloc150TimesStorePointersArray();
-//    random1Byte();
+//    int arr[6];
+//    struct timeval start;
+//    gettimeofday(&start, NULL);
+//    malloc050Times();
+//    malloc050TimesStorePointersArray();
+//    random0Byte();
 //    randomRandomByte();
-//    workload1();
+//    workload0();
 //    workload2();
+    struct node* ptr;
+    int n = 4096/16;
+    int i;
+    for (int i = 0; i < n - 2; i++){
+        malloc(8);
+    }
+    return 0;
 };
