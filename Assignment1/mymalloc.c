@@ -11,7 +11,7 @@ static int memAvailable = 4096;
 static int sizeOfStruct = sizeof(struct node);
 // lastAddress points to the last address that can be reserved (with a data size of 0)
 // Accounts for only enough space for meta data to fit
-static char* lastAddress = &mem[4096] - sizeof(struct node);
+static char* lastAddress = &mem[4096];
 
 
 // Returns pointer to metadata right before sufficient free space
@@ -60,7 +60,6 @@ void* mymalloc(int size, char* file, int line){
     //Below if statement is the only exception to what prev represents
     if (prev == head + 1){
         head -> dataSize = size;
-        printf("%p\n", head + 1);
         return head + 1;
     }
     memAvailable -= (size + sizeOfStruct);
@@ -81,7 +80,6 @@ void* mymalloc(int size, char* file, int line){
 
     // returning ++ptr because ptr is address at beginning of metadata, but ++ptr is address at beginning of user data (after metadata)
     struct node* usrData = ++ptr;
-    printf("%p\n", usrData);
     return usrData;
 }
 

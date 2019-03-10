@@ -78,7 +78,8 @@ void issue1(){
 }
 
 void printPtrData(struct node** arr){
-    for (int i = 0; i < 17; i++){
+    int i;
+    for (i = 0; i < 17; i++){
         printf("%p %d %p\n", arr[i] - 1, (arr[i] - 1) -> dataSize, (arr[i] - 1) -> next);
     }
 }
@@ -96,6 +97,7 @@ void issue2(){
     malloc(1);
     //4042 should be used
     //408FEA
+    malloc(38);
 }
 
 void test1(){
@@ -120,7 +122,7 @@ void test1(){
 //    printPtrData(arr);
 }
 
-int main(){
+int main(){ 
 //    int arr[6];
 //    struct timeval start;
 //    gettimeofday(&start, NULL);
@@ -130,7 +132,15 @@ int main(){
 //    randomRandomByte();
 //    workload1();
 //    workload2();
-    issue2();
+//    issue2();
 //    test1();
-    // int i;
+   // int i;
+   for(int i = 0; i < 256; i++) malloc(8);
+   struct node* ptr = head;
+   while(ptr != NULL){
+       printf("%p\n", ptr);
+       ptr = ptr -> next;
+   }
+   printf("%p", lastAddress);
+   
 };
