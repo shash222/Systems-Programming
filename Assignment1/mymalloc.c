@@ -1,56 +1,63 @@
 #include "mymalloc.h"
 
-//mymalloc.c class
 struct node{
     short dataSize;//number of blocks being referred to
     struct node* next;
 };
-
+static int i = 0;
 static int firstCall = 1;
 static struct node* head = (struct node*) mem;
 static int memAvailable = 4096;
 static int sizeOfStruct = sizeof(struct node);
 // lastAddress points to the last address that can be reserved (with a data size of 0)
 // Accounts for only enough space for meta data to fit
-static char* lastAddress = &mem[4095] - sizeof(struct node);
+static char* lastAddress = &mem[4096] - sizeof(struct node);
+
+
+// Returns pointer to metadata right before sufficient free space
+struct node* getPrevPtr(struct node* ptr){
+}
 
 //Pointers point to address of next metadata, not next free address
-void* spaceAvailable(size_t size){
+void* spaceAvailable(int size){
+    printf("%d\n", size);
     int spaceAvailable;
-    int spaceNeeded = memAvailable - (sizeOfStruct + size);
-    if (spaceNeeded < 0){
+    int spaceNeeded = sizeOfStruct + size;
+    if (memAvailable - spaceNeeded < 0){
         return NULL;
     }
     if (firstCall == 1) return mem;
+    if (head -> dataSize == 0) return (head + 1);
     struct node* ptr = head;
-    char* dataStartPtr;
+    char* dataEndPtr;
     struct node* next = ptr -> next;
-
     //spaceNeeded refers to space needed to reserve
     spaceNeeded = size + sizeOfStruct;
-//    printf("%p %p %p\n", ptr, next, lastAddress);
-
+    
     //No metadata will fit after address stored in lastAddress variable
-    while((char*) next <= lastAddress){
-        dataStartPtr = (char*)(ptr + 1);
-        //spaceAvailable refers to space available between current data and next metadata
-        spaceAvailable = (char*) next - dataStartPtr;
- //       printf("%p %p %d\n", next, dataStartPtr, spaceAvailable);
-
-        //returns current pointer address if there is sufficient space after it
-        //new data will be stored after current pointer being returned
-        if (spaceAvailable >= spaceNeeded) return ptr;
-        ptr = next;
-        next = next -> next;
+    while(ptr <= (struct node*) lastAddress && ptr != NULL){
+        dataEndPtr = ( ( (char*) (ptr + 1) ) + (ptr -> dataSize));
+        spaceAvailable = (ptr -> next) - (struct node*) dataEndPtr;
+        if (spaceAvailable >= spaceNeeded) return getPrevPtr(ptr);
+        ptr = ptr -> next;
     }
     return NULL;
 }
 
-void* mymalloc(size_t size, char* file, int line){
-    struct node* prev;
-    if ((prev = (struct node*) spaceAvailable(size)) == NULL){
+void* mymalloc(int size, char* file, int line){
+    //prev refers to address of metadata that's going to point to the pointer being created
+    struct node* prev = (struct node*) spaceAvailable(size);
+//    printf("%p\n", prev);
+    if (prev == NULL){
         printf("Not enough memory available!\n");
         return NULL;
+    }
+
+    //If head pointer has been freed, metadata still remains but dataSize for head pointer is 0
+    //Below if statement is the only exception to what prev represents
+    if (prev == head + 1){
+        head -> dataSize = size;
+        return head + 1;
     }
     memAvailable -= (size + sizeOfStruct);
     struct node* ptr;
@@ -67,13 +74,52 @@ void* mymalloc(size_t size, char* file, int line){
         ptr -> next = temp;
     }
     ptr -> dataSize = size;
-    // returning ++ptr because ptr is address at beginning of metadata, but ++ptr is address at beginning of user data (after metadata)
-    printf("%p\n", ptr);
-    return ++ptr;
-} 
 
+    // returning ++ptr because ptr is address at beginning of metadata, but ++ptr is address at beginning of user data (after metadata)
+    struct node* usrData = ++ptr;
+    return usrData;
+}
+
+ 
+//Checks if there is some metadata that points to user data address submitted
+struct node* findMD(char* address){
+    if(head + 1 == (struct node*) address){
+        return head;
+    }
+    struct node* ptr = head;
+    //Returning address of metadata (previous) before the metadata of data that needs to be deleted
+    //(previous) metadata will point to metadata after next metadata
+    while((ptr -> next) + 1 < (struct node*) lastAddress){
+        if ((ptr -> next) + 1 == (struct node*) address) return ptr;
+        ptr = ptr -> next;
+    }
+    return NULL;
+    /*
+    while(ptr <= lastAddress){
+        if (ptr + 1 == address) return ptr;
+        if (ptr + 1 > address) return NULL;
+        ptr = ptr -> next;
+    }
+    */
+}
+
+//If freeing first pointer, need to replace pointer's metadata with metadata that points to next reserved metadata but current should
+//have dataSize of 0
 void myfree(char* ptr, char* file, int line){
-    printf("MyFree");
+    //metadata pointer;
+    struct node* mdPtr = findMD(ptr);
+    if (mdPtr == NULL){ 
+        printf("Cannot free pointer, pointer does not exist!");
+        return;
+    }
+    printf("Freed ptr at %p\n", ptr);
+    if (mdPtr == head){
+        memAvailable += head -> dataSize;
+        head -> dataSize = 0;
+        return;
+    }
+    memAvailable += mdPtr -> next -> dataSize;;
+    mdPtr -> next = mdPtr -> next -> next;
 }
 
 
