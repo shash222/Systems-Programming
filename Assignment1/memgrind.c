@@ -134,8 +134,9 @@ int main(){
 //    workload2();
 //    issue2();
 //    test1();
-   // int i;
-   for(int i = 0; i < 256; i++) malloc(8);
+   int i;
+
+   for(i = 0; i < 256; i++) malloc(8);
    struct node* ptr = head;
    while(ptr != NULL){
        printf("%p\n", ptr);
